@@ -1,0 +1,25 @@
+# Agent and assistant-local files
+AGENTS.md
+.agents/
+.agent/
+.codex/
+.claude/
+.cursor/
+.windsurf/
+
+# Local planning and specification docs
+references/
+specs/
+plans/
+SPEC.md
+SPECS.md
+PLAN.md
+PLANS.md
+*.spec.md
+*.specification.md
+*.plan.md
+*-spec.md
+*-plan.md
+*_spec.md
+*_plan.md
+
