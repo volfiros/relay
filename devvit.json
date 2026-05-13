@@ -1,0 +1,41 @@
+{
+  "$schema": "https://developers.reddit.com/schema/config-file.v1.json",
+  "name": "relay",
+  "post": {
+    "dir": "dist",
+    "entrypoints": {
+      "default": {
+        "entry": "index.html",
+        "height": "tall"
+      }
+    }
+  },
+  "server": {
+    "entry": "src/server/index.ts"
+  },
+  "permissions": {
+    "redis": true
+  },
+  "menu": {
+    "items": [
+      {
+        "label": "Open Relay",
+        "description": "Open Relay Decision Brief",
+        "forUserType": "moderator",
+        "location": ["post", "comment"],
+        "endpoint": "/internal/menu/open-relay"
+      },
+      {
+        "label": "Open Relay Catch-Up",
+        "description": "Open Relay My Catch-Up",
+        "forUserType": "moderator",
+        "location": "subreddit",
+        "endpoint": "/internal/menu/open-catch-up"
+      }
+    ]
+  },
+  "scripts": {
+    "build": "bun run build",
+    "dev": "bun run dev"
+  }
+}

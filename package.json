@@ -1,0 +1,31 @@
+{
+  "name": "relay",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite --host 0.0.0.0",
+    "test": "bun test",
+    "test:watch": "bun test --watch",
+    "typecheck": "tsc --noEmit",
+    "devvit:playtest": "bunx devvit playtest"
+  },
+  "dependencies": {
+    "@devvit/client": "latest",
+    "@devvit/server": "latest",
+    "@vitejs/plugin-react": "latest",
+    "hono": "^4.12.18",
+    "react": "latest",
+    "react-dom": "latest",
+    "vite": "latest"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
+    "devvit": "latest",
+    "typescript": "latest",
+    "vitest": "latest"
+  }
+}

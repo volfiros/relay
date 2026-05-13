@@ -7,10 +7,16 @@ AGENTS.md
 .cursor/
 .windsurf/
 
+# Dependencies and build output
+node_modules/
+dist/
+
 # Local planning and specification docs
 references/
 specs/
 plans/
+docs/demo/
+docs/superpowers/plans/
 SPEC.md
 SPECS.md
 PLAN.md
@@ -22,4 +28,3 @@ PLANS.md
 *-plan.md
 *_spec.md
 *_plan.md
-
