@@ -1,26 +1,20 @@
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { apiGet } from "../api";
 import { BoardCaseRow } from "../components/BoardCaseRow";
-import { BoardFilters } from "../components/BoardFilters";
+import { BoardFilters, type BoardFilterValues } from "../components/BoardFilters";
 import { EmptyState } from "../components/EmptyState";
 import type { RelayBoardDto } from "../../server/services/boardService";
 
-export function RelayBoard() {
-  const [data, setData] = useState<RelayBoardDto | null>(null);
-  const [error, setError] = useState<string | null>(null);
+export function RelayBoard({ filters }: { filters: BoardFilterValues }) {
+  const { data, error, isPending } = useRelayBoardQuery(filters);
 
-  useEffect(() => {
-    apiGet<RelayBoardDto>("/api/board")
-      .then(setData)
-      .catch((caught: Error) => setError(caught.message));
-  }, []);
-
-  if (error) return <EmptyState title="Unable to load Relay Board" body={error} />;
-  if (!data) return <EmptyState title="Loading" body="Loading shared case continuity." />;
+  if (error) return <EmptyState title="Unable to load Relay Board" body={getErrorMessage(error)} />;
+  if (isPending) return <EmptyState title="Loading" body="Loading shared case continuity." />;
+  if (!data) return <EmptyState title="Unable to load Relay Board" body="Relay did not return board data." />;
 
   return (
     <section className="screen">
-      <BoardFilters />
+      <BoardFilters filters={filters} />
       <div className="grid">
         <Summary label="Open cases" value={data.activitySummary.openCaseCount} />
         <Summary label="Pending reviews" value={data.activitySummary.pendingReviewCount} />
@@ -39,6 +33,21 @@ export function RelayBoard() {
   );
 }
 
+function useRelayBoardQuery(filters: BoardFilterValues) {
+  return useQuery({
+    queryKey: ["board", filters],
+    queryFn: () => apiGet<RelayBoardDto>(`/api/board${toBoardQueryString(filters)}`),
+  });
+}
+
+function toBoardQueryString(filters: BoardFilterValues): string {
+  const params = new URLSearchParams();
+  if (filters.status) params.set("status", filters.status);
+  if (filters.urgency) params.set("urgency", filters.urgency);
+  const query = params.toString();
+  return query ? `?${query}` : "";
+}
+
 function Summary({ label, value }: { label: string; value: number }) {
   return (
     <div className="panel">
@@ -46,4 +55,8 @@ function Summary({ label, value }: { label: string; value: number }) {
       <p>{label}</p>
     </div>
   );
+}
+
+function getErrorMessage(error: unknown) {
+  return error instanceof Error ? error.message : "Unknown error";
 }

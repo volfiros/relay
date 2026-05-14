@@ -1,20 +1,14 @@
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { apiGet } from "../api";
 import { EmptyState } from "../components/EmptyState";
 import type { RelaySettings } from "../../server/services/settingsService";
 
 export function Settings() {
-  const [settings, setSettings] = useState<RelaySettings | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const { data: settings, error, isPending } = useSettingsQuery();
 
-  useEffect(() => {
-    apiGet<RelaySettings>("/api/settings")
-      .then(setSettings)
-      .catch((caught: Error) => setError(caught.message));
-  }, []);
-
-  if (error) return <EmptyState title="Unable to load settings" body={error} />;
-  if (!settings) return <EmptyState title="Loading" body="Loading Relay settings." />;
+  if (error) return <EmptyState title="Unable to load settings" body={getErrorMessage(error)} />;
+  if (isPending) return <EmptyState title="Loading" body="Loading Relay settings." />;
+  if (!settings) return <EmptyState title="Unable to load settings" body="Relay did not return settings data." />;
 
   return (
     <section className="screen">
@@ -40,4 +34,15 @@ export function Settings() {
       </div>
     </section>
   );
+}
+
+function useSettingsQuery() {
+  return useQuery({
+    queryKey: ["settings"],
+    queryFn: () => apiGet<RelaySettings>("/api/settings"),
+  });
+}
+
+function getErrorMessage(error: unknown) {
+  return error instanceof Error ? error.message : "Unknown error";
 }

@@ -1,13 +1,13 @@
+import { Link } from "@tanstack/react-router";
 import { StatusBadge } from "./StatusBadge";
-import { routes } from "../routes";
 import type { BoardCaseDto } from "../../server/services/boardService";
 
 export function BoardCaseRow({ item }: { item: BoardCaseDto }) {
   return (
     <article className="item-row">
-      <a className="item-title" href={routes.caseDetail(item.id)}>
+      <Link className="item-title" params={{ caseId: item.id }} to="/cases/$caseId">
         {item.title}
-      </a>
+      </Link>
       <div className="meta">
         <StatusBadge value={item.status} />
         <StatusBadge value={item.urgency} />

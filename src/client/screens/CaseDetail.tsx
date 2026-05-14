@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { apiGet } from "../api";
 import { CaseTimeline } from "../components/CaseTimeline";
 import { EmptyState } from "../components/EmptyState";
@@ -11,23 +11,11 @@ interface CaseDetailDto {
 }
 
 export function CaseDetail({ caseId }: { caseId: string }) {
-  const [data, setData] = useState<CaseDetailDto | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const { data, error, isPending } = useCaseDetailQuery(caseId);
 
-  useEffect(() => {
-    apiGet<CaseDetailDto | CaseCard>(`/api/cases/${encodeURIComponent(caseId)}`)
-      .then((response) => {
-        if ("caseCard" in response) {
-          setData(response);
-        } else {
-          setData({ caseCard: response, events: [] });
-        }
-      })
-      .catch((caught: Error) => setError(caught.message));
-  }, [caseId]);
-
-  if (error) return <EmptyState title="Unable to load case" body={error} />;
-  if (!data) return <EmptyState title="Loading" body="Loading the case record." />;
+  if (error) return <EmptyState title="Unable to load case" body={getErrorMessage(error)} />;
+  if (isPending) return <EmptyState title="Loading" body="Loading the case record." />;
+  if (!data) return <EmptyState title="Unable to load case" body="Relay did not return case data." />;
 
   const caseCard = data.caseCard;
 
@@ -68,4 +56,19 @@ export function CaseDetail({ caseId }: { caseId: string }) {
       </section>
     </section>
   );
+}
+
+function useCaseDetailQuery(caseId: string) {
+  return useQuery({
+    queryKey: ["case", caseId],
+    queryFn: async (): Promise<CaseDetailDto> => {
+      const response = await apiGet<CaseDetailDto | CaseCard>(`/api/cases/${encodeURIComponent(caseId)}`);
+      if ("caseCard" in response) return response;
+      return { caseCard: response, events: [] };
+    },
+  });
+}
+
+function getErrorMessage(error: unknown) {
+  return error instanceof Error ? error.message : "Unknown error";
 }

@@ -1,29 +1,18 @@
-import { useEffect, useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { Link } from "@tanstack/react-router";
 import { apiGet } from "../api";
 import { EmptyState } from "../components/EmptyState";
 import { StatusBadge } from "../components/StatusBadge";
-import { routes } from "../routes";
 import type { DecisionBriefDto } from "../../server/routes/decisionBriefRoutes";
 
-export function DecisionBrief() {
-  const params = useMemo(() => new URLSearchParams(window.location.search), []);
-  const targetType = params.get("targetType");
-  const targetId = params.get("targetId");
-  const [data, setData] = useState<DecisionBriefDto | null>(null);
-  const [error, setError] = useState<string | null>(null);
+export function DecisionBrief({ targetType, targetId }: { targetType: "post" | "comment" | null; targetId: string | null }) {
+  const hasValidTarget = (targetType === "post" || targetType === "comment") && Boolean(targetId);
+  const { data, error, isPending } = useDecisionBriefQuery(targetType, targetId, hasValidTarget);
 
-  useEffect(() => {
-    if ((targetType !== "post" && targetType !== "comment") || !targetId) {
-      setError("Decision Brief needs a post or comment target.");
-      return;
-    }
-    apiGet<DecisionBriefDto>(`/api/decision-brief?targetType=${targetType}&targetId=${encodeURIComponent(targetId)}`)
-      .then(setData)
-      .catch((caught: Error) => setError(caught.message));
-  }, [targetId, targetType]);
-
-  if (error) return <EmptyState title="Unable to load Decision Brief" body={error} />;
-  if (!data) return <EmptyState title="Loading" body="Gathering target context and prior Relay history." />;
+  if (!hasValidTarget) return <EmptyState title="Unable to load Decision Brief" body="Decision Brief needs a post or comment target." />;
+  if (error) return <EmptyState title="Unable to load Decision Brief" body={getErrorMessage(error)} />;
+  if (isPending) return <EmptyState title="Loading" body="Gathering target context and prior Relay history." />;
+  if (!data) return <EmptyState title="Unable to load Decision Brief" body="Relay did not return decision brief data." />;
 
   return (
     <section className="screen">
@@ -59,9 +48,9 @@ export function DecisionBrief() {
           <div className="item-list">
             {data.priorCases.map((caseRef) => (
               <article className="item-row" key={caseRef.id}>
-                <a className="item-title" href={routes.caseDetail(caseRef.id)}>
+                <Link className="item-title" params={{ caseId: caseRef.id }} to="/cases/$caseId">
                   {caseRef.title}
-                </a>
+                </Link>
                 <StatusBadge value={caseRef.status} />
               </article>
             ))}
@@ -79,6 +68,17 @@ export function DecisionBrief() {
   );
 }
 
+function useDecisionBriefQuery(targetType: "post" | "comment" | null, targetId: string | null, enabled: boolean) {
+  return useQuery({
+    queryKey: ["decision-brief", targetType, targetId],
+    queryFn: () =>
+      apiGet<DecisionBriefDto>(
+        `/api/decision-brief?targetType=${encodeURIComponent(targetType ?? "")}&targetId=${encodeURIComponent(targetId ?? "")}`,
+      ),
+    enabled,
+  });
+}
+
 function BriefPanel({ title, body }: { title: string; body: string }) {
   return (
     <div className="panel">
@@ -86,4 +86,8 @@ function BriefPanel({ title, body }: { title: string; body: string }) {
       <p>{body}</p>
     </div>
   );
+}
+
+function getErrorMessage(error: unknown) {
+  return error instanceof Error ? error.message : "Unknown error";
 }

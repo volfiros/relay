@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { Link } from "@tanstack/react-router";
 import { apiGet } from "../api";
 import { EmptyState } from "../components/EmptyState";
 import { StatusBadge } from "../components/StatusBadge";
-import { routes } from "../routes";
 import type { CatchUpDto, CatchUpItemDto } from "../../server/services/catchUpService";
 
 const sections: Array<[keyof Omit<CatchUpDto, "lastSeenAt">, string]> = [
@@ -16,17 +16,11 @@ const sections: Array<[keyof Omit<CatchUpDto, "lastSeenAt">, string]> = [
 ];
 
 export function MyCatchUp() {
-  const [data, setData] = useState<CatchUpDto | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const { data, error, isPending } = useCatchUpQuery();
 
-  useEffect(() => {
-    apiGet<CatchUpDto>("/api/catch-up")
-      .then(setData)
-      .catch((caught: Error) => setError(caught.message));
-  }, []);
-
-  if (error) return <EmptyState title="Unable to load My Catch-Up" body={error} />;
-  if (!data) return <EmptyState title="Loading" body="Gathering your moderation continuity queue." />;
+  if (error) return <EmptyState title="Unable to load My Catch-Up" body={getErrorMessage(error)} />;
+  if (isPending) return <EmptyState title="Loading" body="Gathering your moderation continuity queue." />;
+  if (!data) return <EmptyState title="Unable to load My Catch-Up" body="Relay did not return catch-up data." />;
 
   const hasItems = sections.some(([key]) => data[key].length > 0);
 
@@ -47,6 +41,13 @@ export function MyCatchUp() {
   );
 }
 
+function useCatchUpQuery() {
+  return useQuery({
+    queryKey: ["catch-up"],
+    queryFn: () => apiGet<CatchUpDto>("/api/catch-up"),
+  });
+}
+
 function CatchUpSection({ title, items }: { title: string; items: CatchUpItemDto[] }) {
   if (items.length === 0) return null;
 
@@ -56,9 +57,15 @@ function CatchUpSection({ title, items }: { title: string; items: CatchUpItemDto
       <div className="item-list">
         {items.map((item) => (
           <article className="item-row" key={`${item.kind}:${item.id}`}>
-            <a className="item-title" href={item.caseId ? routes.caseDetail(item.caseId) : item.targetPermalink ?? "#"}>
-              {item.title}
-            </a>
+            {item.caseId ? (
+              <Link className="item-title" params={{ caseId: item.caseId }} to="/cases/$caseId">
+                {item.title}
+              </Link>
+            ) : (
+              <a className="item-title" href={item.targetPermalink ?? "#"}>
+                {item.title}
+              </a>
+            )}
             <div className="meta">
               <StatusBadge value={item.status} />
               <StatusBadge value={item.urgency} />
@@ -69,4 +76,8 @@ function CatchUpSection({ title, items }: { title: string; items: CatchUpItemDto
       </div>
     </section>
   );
+}
+
+function getErrorMessage(error: unknown) {
+  return error instanceof Error ? error.message : "Unknown error";
 }
