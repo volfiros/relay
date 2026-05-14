@@ -13,11 +13,11 @@ import { Settings } from "./screens/Settings";
 import type { BoardFilterValues } from "./components/BoardFilters";
 
 type BriefSearch = {
-  targetType: "post" | "comment" | null;
-  targetId: string | null;
+  targetType?: "post" | "comment";
+  targetId?: string;
 };
 
-type BoardSearch = BoardFilterValues;
+type BoardSearch = Partial<BoardFilterValues>;
 
 const rootRoute = createRootRoute({
   component: App,
@@ -33,15 +33,15 @@ const briefRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/brief",
   validateSearch: (search: Record<string, unknown>): BriefSearch => ({
-    targetType: search.targetType === "post" || search.targetType === "comment" ? search.targetType : null,
-    targetId: typeof search.targetId === "string" ? search.targetId : null,
+    ...(search.targetType === "post" || search.targetType === "comment" ? { targetType: search.targetType } : {}),
+    ...(typeof search.targetId === "string" ? { targetId: search.targetId } : {}),
   }),
   component: BriefRoute,
 });
 
 function BriefRoute() {
   const search = briefRoute.useSearch();
-  return <DecisionBrief targetType={search.targetType} targetId={search.targetId} />;
+  return <DecisionBrief targetType={search.targetType ?? null} targetId={search.targetId ?? null} />;
 }
 
 const caseDetailRoute = createRoute({
@@ -62,18 +62,18 @@ const relayBoardRoute = createRoute({
     status:
       search.status === "open" || search.status === "watching" || search.status === "needs_review" || search.status === "handed_off"
         ? search.status
-        : "",
+        : undefined,
     urgency:
       search.urgency === "urgent" || search.urgency === "high" || search.urgency === "normal" || search.urgency === "low"
         ? search.urgency
-        : "",
+        : undefined,
   }),
   component: RelayBoardRoute,
 });
 
 function RelayBoardRoute() {
   const filters = relayBoardRoute.useSearch();
-  return <RelayBoard filters={filters} />;
+  return <RelayBoard filters={{ status: filters.status ?? "", urgency: filters.urgency ?? "" }} />;
 }
 
 const appealMemoryRoute = createRoute({

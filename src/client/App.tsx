@@ -7,9 +7,7 @@ export function App() {
         <h1>Relay</h1>
         <nav aria-label="Primary">
           <Link to="/">My Catch-Up</Link>
-          <Link search={{ status: "", urgency: "" }} to="/board">
-            Relay Board
-          </Link>
+          <Link to="/board">Relay Board</Link>
           <Link to="/settings">Settings</Link>
         </nav>
       </header>

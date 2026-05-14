@@ -1,6 +1,6 @@
 {
   "$schema": "https://developers.reddit.com/schema/config-file.v1.json",
-  "name": "relay",
+  "name": "relay-volfiros",
   "post": {
     "dir": "dist",
     "entrypoints": {
@@ -11,7 +11,7 @@
     }
   },
   "server": {
-    "entry": "src/server/index.ts"
+    "entry": "index.js"
   },
   "permissions": {
     "redis": true
@@ -22,7 +22,10 @@
         "label": "Open Relay",
         "description": "Open Relay Decision Brief",
         "forUserType": "moderator",
-        "location": ["post", "comment"],
+        "location": [
+          "post",
+          "comment"
+        ],
         "endpoint": "/internal/menu/open-relay"
       },
       {
@@ -37,5 +40,8 @@
   "scripts": {
     "build": "bun run build",
     "dev": "bun run dev"
+  },
+  "dev": {
+    "subreddit": "relay_volfiros_dev"
   }
 }
