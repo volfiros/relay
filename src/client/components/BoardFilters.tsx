@@ -19,11 +19,14 @@ export function BoardFilters({ filters }: { filters: BoardFilterValues }) {
   }
 
   return (
-    <div className="panel">
-      <h2>Filters</h2>
-      <div className="grid">
-        <label>
-          Status
+    <div className="panel filter-panel">
+      <div>
+        <p className="eyebrow">Filters</p>
+        <h2>Refine board</h2>
+      </div>
+      <div className="grid filter-grid">
+        <label className="filter-control">
+          <span>Status</span>
           <select aria-label="Status filter" onChange={(event) => updateFilter({ status: event.currentTarget.value as BoardFilterValues["status"] })} value={filters.status}>
             <option value="">Any</option>
             <option value="open">Open</option>
@@ -32,8 +35,8 @@ export function BoardFilters({ filters }: { filters: BoardFilterValues }) {
             <option value="handed_off">Handed Off</option>
           </select>
         </label>
-        <label>
-          Urgency
+        <label className="filter-control">
+          <span>Urgency</span>
           <select aria-label="Urgency filter" onChange={(event) => updateFilter({ urgency: event.currentTarget.value as BoardFilterValues["urgency"] })} value={filters.urgency}>
             <option value="">Any</option>
             <option value="urgent">Urgent</option>

@@ -51,8 +51,16 @@ export const runtimeDeps = {
 
 export function getRuntimeRouteContext(): RouteContext {
   return {
-    subredditId: devvitContext.subredditId ?? DEMO_SUBREDDIT_ID,
-    subredditName: devvitContext.subredditName ?? DEMO_SUBREDDIT_NAME,
-    modId: devvitContext.userId ?? DEMO_PRIMARY_MOD_ID,
+    subredditId: getDevvitContextValue("subredditId") ?? DEMO_SUBREDDIT_ID,
+    subredditName: getDevvitContextValue("subredditName") ?? DEMO_SUBREDDIT_NAME,
+    modId: getDevvitContextValue("userId") ?? DEMO_PRIMARY_MOD_ID,
   };
+}
+
+function getDevvitContextValue(key: "subredditId" | "subredditName" | "userId"): string | undefined {
+  try {
+    return devvitContext[key] ?? undefined;
+  } catch {
+    return undefined;
+  }
 }
